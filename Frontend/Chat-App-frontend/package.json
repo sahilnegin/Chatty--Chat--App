@@ -13,6 +13,12 @@
     "preview": "vite preview",
     "vercel-build": "vite build"
   },
+  "optionalDependencies": {
+  "@rollup/rollup-linux-x64-gnu": "^4.40.2"
+},
+"optionalDependencies": {
+  "@rollup/rollup-linux-x64-gnu": "^4.40.2"
+},
   "dependencies": {
     "@tailwindcss/vite": "^4.1.6",
     "axios": "^1.9.0",
