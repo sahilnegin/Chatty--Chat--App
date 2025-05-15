@@ -25,7 +25,7 @@ const AllUsers = () => {
         const response = await fetch('http://localhost:5000/api/allusers', {
           method: 'GET',
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
         });
@@ -114,14 +114,14 @@ const AllUsers = () => {
       const response = await fetch(`http://localhost:5000/api/messages/${userId}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
 
       if (response.ok) {
         const messages = await response.json();
-        const formattedMessages = messages.map(msg => ({
+        const formattedMessages = messages.map((msg) => ({
           from: msg.sender === userId ? name : 'You',
           message: msg.content,
           timestamp: new Date(msg.timestamp).toLocaleTimeString(),
@@ -177,141 +177,194 @@ const AllUsers = () => {
   };
 
   const handleFileUpload = async (file) => {
-  if (!file || !activeUser) return;
+    if (!file || !activeUser) return;
 
-  const token = localStorage.getItem('token');
-  const formData = new FormData();
-  formData.append('file', file);
+    const token = localStorage.getItem('token');
+    const formData = new FormData();
+    formData.append('file', file);
 
-  try {
-    const response = await fetch(`http://localhost:5000/api/upload/${activeUser.userId}`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    if (response.ok) {
-      toast.success('File sent successfully');
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          from: 'You',
-          message: `📎 Sent file: ${file.name}`,
-          timestamp: new Date().toLocaleTimeString(),
+    try {
+      const response = await fetch(`http://localhost:5000/api/upload/${activeUser.userId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      ]);
-    } else {
-      toast.error('Failed to send file');
+        body: formData,
+      });
+
+      if (response.ok) {
+        toast.success('File sent successfully');
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            from: 'You',
+            message: `📎 Sent file: ${file.name}`,
+            timestamp: new Date().toLocaleTimeString(),
+          },
+        ]);
+      } else {
+        toast.error('Failed to send file');
+      }
+    } catch (err) {
+      toast.error('Something went wrong while uploading the file');
+      console.error(err);
     }
-  } catch (err) {
-    toast.error('Something went wrong while uploading the file');
-    console.error(err);
-  }
-};
+  };
 
-
-  if (loading) return <p className="text-center text-xl text-gray-500">Loading users...</p>;
-  if (message) return <p className="text-center text-xl text-red-500">{message}</p>;
+  if (loading) return <p className="text-center text-xl text-gray-400 mt-24">Loading users...</p>;
+  if (message) return <p className="text-center text-xl text-red-600 mt-24">{message}</p>;
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8">
-      <div className="w-1/4 max-h-screen overflow-y-auto bg-white p-6 rounded-l-xl shadow-xl">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Users</h2>
-        <div className="flex flex-col gap-4 mb-8">
-          {users.map((user) => (
-            
-            <div
-              key={user._id || user.id}
-              onClick={() => handleClickUser(user._id || user.id, user.name)}
-              className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300"
-            >
-              {user.name}
-            </div>
-          ))}
+    <div className="flex min-h-screen bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 p-8 font-sans text-gray-100">
+      {/* Sidebar */}
+      <aside className="w-72 bg-gray-800 rounded-2xl shadow-2xl p-6 flex flex-col">
+        <h2 className="text-4xl font-extrabold text-center mb-8 tracking-wide drop-shadow-lg">
+          Team Chat
+        </h2>
+
+        <div className="mb-10">
+          <h3 className="text-xl font-semibold mb-4 border-b border-purple-700 pb-2 uppercase tracking-wide">
+            Users
+          </h3>
+          <ul className="space-y-3 max-h-96 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-gray-700">
+            {users.map((user) => (
+              <li
+                key={user._id || user.id}
+                onClick={() => handleClickUser(user._id || user.id, user.name)}
+                className={`cursor-pointer rounded-lg px-4 py-3 transition-colors duration-300 ${
+                  activeUser?.userId === (user._id || user.id)
+                    ? 'bg-purple-600 shadow-lg'
+                    : 'hover:bg-purple-700'
+                }`}
+                title={user.email || ''}
+              >
+                {user.name}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <h2 className="text-2xl font-semibold text-center text-gray-800 mb-4">Rooms</h2>
-        <div className="flex flex-col gap-4">
-          {rooms.map((room) => (
-            <div
-              key={room.id}
-              onClick={() => handleJoinRoom(room.id)}
-              className="cursor-pointer bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transition-all duration-300"
-            >
-              {room.name}
-            </div>
-          ))}
+        <div>
+          <h3 className="text-xl font-semibold mb-4 border-b border-green-600 pb-2 uppercase tracking-wide">
+            Rooms
+          </h3>
+          <ul className="space-y-3 max-h-48 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-700">
+            {rooms.map((room) => (
+              <li
+                key={room.id}
+                onClick={() => handleJoinRoom(room.id)}
+                className={`cursor-pointer rounded-lg px-4 py-3 transition-colors duration-300 ${
+                  activeRoom?.id === room.id ? 'bg-green-600 shadow-lg' : 'hover:bg-green-700'
+                }`}
+                title={room.description || ''}
+              >
+                {room.name}
+              </li>
+            ))}
+          </ul>
         </div>
-      </div>
+      </aside>
 
-      <div className="w-3/4 max-h-screen bg-white p-6 rounded-r-xl shadow-xl flex flex-col">
+      {/* Chat Section */}
+      <section className="flex-1 bg-white rounded-2xl shadow-2xl flex flex-col p-6">
         {(activeUser || activeRoom) ? (
           <>
-            <h3 className="text-2xl font-bold text-center mb-4">
-              Chat with {activeUser ? activeUser.name : activeRoom.name}
-            </h3>
-            <div className="flex flex-col gap-4 mb-4 flex-1 overflow-auto">
-              <div className="h-72 overflow-auto p-4 bg-gray-100 rounded-lg border border-gray-300 shadow-inner">
+            <header className="mb-6 border-b border-gray-300 pb-3">
+              <h3 className="text-3xl font-bold text-gray-900">
+                Chat with <span className="text-indigo-600">{activeUser ? activeUser.name : activeRoom.name}</span>
+              </h3>
+            </header>
+
+            <div className="flex flex-col flex-1 overflow-hidden rounded-lg border border-gray-300 shadow-inner bg-gray-50 p-6">
+              <div className="flex-1 overflow-y-auto space-y-4 mb-4 scrollbar-thin scrollbar-thumb-indigo-400 scrollbar-track-gray-200 pr-2">
+                {chatMessages.length === 0 && (
+                  <p className="text-center text-gray-400 mt-12">No messages yet. Say hi!</p>
+                )}
                 {chatMessages.map((msg, index) => (
-                  <div key={index} className="text-sm mb-2">
-                    <strong className={`text-${msg.from === 'You' ? 'green' : 'blue'}-600`}>
-                      {msg.from}:
-                    </strong>{' '}
-                    {msg.message} <span className="text-gray-400 text-xs">({msg.timestamp})</span>
+                  <div
+                    key={index}
+                    className={`max-w-[70%] px-4 py-2 rounded-2xl relative shadow ${
+                      msg.from === 'You'
+                        ? 'bg-indigo-600 text-white ml-auto rounded-br-none'
+                        : 'bg-white text-gray-800 rounded-bl-none'
+                    }`}
+                  >
+                    <div className="font-semibold mb-1">{msg.from}</div>
+                    <div className="whitespace-pre-wrap">{msg.message}</div>
+                    <time className="block text-xs text-gray-400 mt-1 text-right">
+                      {msg.timestamp}
+                    </time>
                   </div>
                 ))}
               </div>
 
-              <div className="flex flex-col gap-2">
-<div className="flex gap-4 items-center">
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="w-6 h-6 text-gray-600">
-    <path stroke-linecap="round" stroke-linejoin="round" d="m18.375 12.739-7.693 7.693a4.5 4.5 0 0 1-6.364-6.364l10.94-10.94A3 3 0 1 1 19.5 7.372L8.552 18.32m.009-.01-.01.01m5.699-9.941-7.81 7.81a1.5 1.5 0 0 0 2.112 2.13" />
-  </svg>
-  
-  <input
-    type="text"
-    placeholder="Type a message"
-    className="flex-1 p-4 border border-gray-300 rounded-xl shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-    onKeyDown={(e) => {
-      if (e.key === 'Enter') {
-        handleSendMessage(e.target.value);
-        e.target.value = '';
-      }
-    }}
-  />
-  
-  <button
-    className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-4 rounded-lg shadow-md"
-    onClick={(e) => {
-      const input = e.target.previousElementSibling;
-      handleSendMessage(input.value);
-      input.value = '';
-    }}
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-</svg>
+              {/* Message Input */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const message = e.target.messageInput.value;
+                  handleSendMessage(message);
+                  e.target.messageInput.value = '';
+                }}
+                className="flex items-center gap-4"
+              >
+                <input
+                  id="messageInput"
+                  name="messageInput"
+                  type="text"
+                  autoComplete="off"
+                  placeholder="Type your message..."
+                  className="flex-1 rounded-full border border-gray-300 px-5 py-3 shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  required
+                />
 
-  </button>
-</div>
+                <button
+                  type="submit"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-6 py-3 shadow-lg transition"
+                  aria-label="Send message"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M14.752 11.168l-9.692-3.175a.75.75 0 01.955-1.019l14.943 7.24a.75.75 0 010 1.338l-14.943 7.24a.75.75 0 01-.955-1.02l9.692-3.176"
+                    />
+                  </svg>
+                </button>
+              </form>
 
-
-                {activeUser && (
+              {/* File Upload */}
+              {activeUser && (
+                <div className="mt-4">
+                  <label
+                    htmlFor="fileUpload"
+                    className="cursor-pointer inline-block text-indigo-600 hover:text-indigo-800 font-semibold"
+                  >
+                    📎 Attach file
+                  </label>
                   <input
                     type="file"
-                    className="text-sm"
+                    id="fileUpload"
+                    className="hidden"
                     onChange={(e) => handleFileUpload(e.target.files[0])}
                   />
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </>
         ) : (
-          <p className="text-xl text-center text-gray-500">Select a user or room to start chatting</p>
+          <div className="flex flex-1 items-center justify-center text-gray-400 text-xl font-medium select-none">
+            Select a user or room to start chatting
+          </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };
